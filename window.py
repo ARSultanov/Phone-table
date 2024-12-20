@@ -82,6 +82,7 @@ class MainTable(QMainWindow):
 
         #
         self.setCentralWidget(central_widget)
+        self.table.cellClicked.connect(self.fill_edit_lines)
 
         # Заполняем таблицу данными
         # self.table.setItem(0, 0, QTableWidgetItem("Иван"))
@@ -128,7 +129,7 @@ class MainTable(QMainWindow):
             3: self.patronymic_input,
             4: self.street_input,
             5: self.house_input,
-            6: self.house_input,
+            6: self.apartment_input,
             7: self.phone_input
         }
         row = self.table.currentRow()
@@ -170,7 +171,7 @@ class MainTable(QMainWindow):
         try:
             self.db.update_data(data)
             self.load_data_from_db()
-            QMessageBox.information(self, "Success", "Запись добавлена успешно")
+            QMessageBox.information(self, "Success", "Запись обновлена успешно")
             loguru.logger.info(f"Обновление записи: {data}")
         except Exception as e:
             QMessageBox.critical(self, "Ошибка Обновления записи", str(e))

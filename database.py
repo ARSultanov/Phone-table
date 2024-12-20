@@ -53,17 +53,7 @@ class DBManager:
         values = list(data.values())
         id_list = []
         for i in range(1, len(col_names[:5])):
-            self.id_check()
-            query = f"SELECT id FROM {self.parents_table[i-1]} WHERE {col_names[i-1]} = %s"
-            print(query)
-            self.cursor.execute(query, (values[i-1],))
-            id = self.cursor.fetchone()
-            if not id:
-                self.cursor.execute(f"INSERT INTO {self.parents_table[i-1]} ({col_names[i-1]}) VALUES (%s) RETURNING id", (values[i-1],))
-                id = self.cursor.fetchone()[0]
-            else:
-                id = id[0]
-            id_list += [id]
+            id_list += [self.id_check(self.parents_table[i-1], col_names[i-1], values[i-1])]
 
         self.cursor.execute("""
                             INSERT INTO entries (name_id, surname_id, patronymic_id, street_id, building, apartment, phone)
@@ -77,16 +67,24 @@ class DBManager:
         values = list(data.values())
         id_list = []
         for i in range(1, len(col_names[:5])):
-            query = f"SELECT id FROM {self.parents_table[i-1]} WHERE {col_names[i-1]} = %s"
-            print(query)
+            id_list += [self.id_check(self.parents_table[i-1], col_names[i-1], values[i-1])]
+
+        self.cursor.execute("""
+            UPDATE entries
+            SET name_id = %s, surname_id = %s, patronymic_id = %s, street_id = %s, 
+            building = %s, apartment = %s, phone = %s
+            WHERE entry_id = %s""",
+            (id_list[0], id_list[1], id_list[2], id_list[3], values[4], values[5], values[6], values[7]))
+
+        for i in range(1, len(col_names[:5])):
+            print(col_names[i-1], values[i-1])
+
+        for i in range(1, len(col_names[:5])):
+            print(i)
+            print(f"DELETE FROM {self.parents_table[i-1]} WHERE {col_names[i-1]} = %s AND id NOT IN (SELECT {col_names[i-1]}_id FROM entries)")
+            query = f"DELETE FROM {self.parents_table[i-1]} WHERE {col_names[i-1]} = %s AND id NOT IN (SELECT {col_names[i-1]}_id FROM entries)"
             self.cursor.execute(query, (values[i-1],))
-            id = self.cursor.fetchone()
-            if not id:
-                self.cursor.execute(f"INSERT INTO {self.parents_table[i-1]} ({col_names[i-1]}) VALUES (%s) RETURNING id", (values[i-1],))
-                id = self.cursor.fetchone()[0]
-            else:
-                id = id[0]
-            id_list += [id]
+            print(values[i-1])
 
         self.conn.commit()
 
