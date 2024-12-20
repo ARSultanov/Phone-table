@@ -174,8 +174,25 @@ class MainTable(QMainWindow):
             QMessageBox.information(self, "Success", "Запись обновлена успешно")
             loguru.logger.info(f"Обновление записи: {data}")
         except Exception as e:
-            QMessageBox.critical(self, "Ошибка Обновления записи", str(e))
+            QMessageBox.critical(self, "Ошибка обновления записи", str(e))
             loguru.logger.error(f"Ошибка обновления записи: {e}")
 
     def remove_row(self):
-        pass
+        selected_row = self.table.currentRow()
+        if selected_row == -1:
+            QMessageBox.warning(self, "Ошибка", "Выберите запись для удаления")
+            return
+
+        keys = ["name", "surname", "patronymic", "street", "building", "apartment", "phone"]
+        data = {key: field.text() for key, field in zip(keys, self.input_fields)}
+        entry_id = self.table.item(selected_row, 0).text()
+        data.update({'entry_id': entry_id})
+
+        try:
+            self.db.delete_data(data)
+            self.load_data_from_db()
+            QMessageBox.information(self, "Success", "Запись удалена успешно")
+            loguru.logger.info(f"Удаление записи: {data}")
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка удаления записи", str(e))
+            loguru.logger.error(f"Ошибка удаления записи: {e}")

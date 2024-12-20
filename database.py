@@ -13,7 +13,7 @@ class DBManager:
             port=port
         )
         self.cursor = self.conn.cursor()
-        self.parents_table = ["names", "surnames", "patronymics", "streets"]
+        self.tables_names = ["names", "surnames", "patronymics", "streets", "entries"]
 
     def fetch_data(self):
         query = """select 
@@ -53,7 +53,7 @@ class DBManager:
         values = list(data.values())
         id_list = []
         for i in range(1, len(col_names[:5])):
-            id_list += [self.id_check(self.parents_table[i-1], col_names[i-1], values[i-1])]
+            id_list += [self.id_check(self.tables_names[i - 1], col_names[i - 1], values[i - 1])]
 
         self.cursor.execute("""
                             INSERT INTO entries (name_id, surname_id, patronymic_id, street_id, building, apartment, phone)
@@ -67,7 +67,7 @@ class DBManager:
         values = list(data.values())
         id_list = []
         for i in range(1, len(col_names[:5])):
-            id_list += [self.id_check(self.parents_table[i-1], col_names[i-1], values[i-1])]
+            id_list += [self.id_check(self.tables_names[i - 1], col_names[i - 1], values[i - 1])]
 
         self.cursor.execute("""
             UPDATE entries
@@ -81,18 +81,26 @@ class DBManager:
 
         for i in range(1, len(col_names[:5])):
             print(i)
-            print(f"DELETE FROM {self.parents_table[i-1]} WHERE {col_names[i-1]} = %s AND id NOT IN (SELECT {col_names[i-1]}_id FROM entries)")
-            query = f"DELETE FROM {self.parents_table[i-1]} WHERE {col_names[i-1]} = %s AND id NOT IN (SELECT {col_names[i-1]}_id FROM entries)"
+            print(f"DELETE FROM {self.tables_names[i - 1]} WHERE {col_names[i - 1]} = %s AND id NOT IN (SELECT {col_names[i - 1]}_id FROM entries)")
+            query = f"DELETE FROM {self.tables_names[i - 1]} WHERE {col_names[i - 1]} = %s AND id NOT IN (SELECT {col_names[i - 1]}_id FROM entries)"
             self.cursor.execute(query, (values[i-1],))
             print(values[i-1])
 
         self.conn.commit()
 
-    def delete_data(self, item_id):
-        """Удалить строку из таблицы."""
-        query = "DELETE FROM entries WHERE id = %s"
-        self.cursor.execute(query, (item_id,))
+    def delete_data(self, data):
+        col_names = list(data.keys())
+        print(col_names)
+        values = list(data.values())
+        query = f"DELETE FROM entries WHERE entry_id = %s"
+        self.cursor.execute(query, (values[-1],))
+        for i in range(0, len(self.tables_names)-1):
+            query = f"DELETE FROM {self.tables_names[i]} WHERE {col_names[i]} = %s AND id NOT IN (SELECT {col_names[i]}_id FROM entries)"
+            print(query)
+            print(values[i])
+            self.cursor.execute(query, (values[i],))
         self.conn.commit()
+
 
 
 """self.cursor.close()
