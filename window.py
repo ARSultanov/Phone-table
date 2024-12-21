@@ -71,11 +71,14 @@ class MainTable(QMainWindow):
         self.update_button.clicked.connect(self.update_row)
         self.delete_button = QPushButton("Удалить")
         self.delete_button.clicked.connect(self.remove_row)
+        self.clear_button = QPushButton("Очистить все")
+        self.clear_button.clicked.connect(self.clear_table)
         self.group_name_label = QLabel("Действия")
 
         button_layout.addWidget(self.add_button)
         button_layout.addWidget(self.update_button)
         button_layout.addWidget(self.delete_button)
+        button_layout.addWidget(self.clear_button)
 
         horizontal_layout.addWidget(button_group)
         horizontal_layout.addLayout(button_layout)
@@ -196,3 +199,24 @@ class MainTable(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Ошибка удаления записи", str(e))
             loguru.logger.error(f"Ошибка удаления записи: {e}")
+
+    def clear_table(self):
+        confirm_window = QMessageBox(self)
+        confirm_window.setWindowTitle("Подтверждение очистки")
+        confirm_window.setText("Вы уверены, что хотите очистить всю таблицу")
+
+        y_button = confirm_window.addButton("Да", QMessageBox.YesRole)
+        n_button = confirm_window.addButton("Нет", QMessageBox.NoRole)
+
+        confirm_window.exec()
+
+        if confirm_window.clickedButton() == y_button:
+            try:
+                self.db.clear_data()
+                self.load_data_from_db()
+                QMessageBox.information(self, "Success", "Таблица очищена")
+            except Exception as e:
+                QMessageBox.critical(self, "Ошибка", f"Не удалось очистить таблицу: {str(e)}")
+                loguru.logger.error(f"Ошибка удаления записи: {e}")
+        else:
+            pass

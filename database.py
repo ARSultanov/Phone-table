@@ -101,7 +101,18 @@ class DBManager:
             self.cursor.execute(query, (values[i],))
         self.conn.commit()
 
-
-
-"""self.cursor.close()
-        self.conn.close()"""
+    def clear_data(self):
+        self.cursor.execute(
+            "DELETE FROM entries;"
+            "DELETE FROM names;"
+            "DELETE FROM surnames;"
+            "DELETE FROM patronymics;"
+            "DELETE FROM streets;"
+            
+            "ALTER SEQUENCE names_id_seq RESTART WITH 1;"
+            "ALTER SEQUENCE surnames_id_seq RESTART WITH 1;"
+            "ALTER SEQUENCE patronymics_id_seq RESTART WITH 1;"
+            "ALTER SEQUENCE streets_id_seq RESTART WITH 1;"
+            "ALTER SEQUENCE entries_id_seq RESTART WITH 1;"
+        )
+        self.conn.commit()
